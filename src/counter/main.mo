@@ -1,65 +1,64 @@
-import Text "mo:base/Text";
-import Nat "mo:base/Nat";
-actor Counter {
-  public type HeaderField = (Text, Text);
+import Iter "mo:base/Iter";
+import List "mo:base/List";
+import Principal "mo:base/Principal";
+import Time "mo:base/Time";
 
-  public type HttpRequest = {
-    url : Text;
-    method : Text;
-    body : [Nat8];
-    headers : [HeaderField];
-  };
-  public type HttpResponse = {
-    body : Blob;
-    headers : [HeaderField];
-    streaming_strategy : ?StreamingStrategy;
-    status_code : Nat16;
-  };
-
-  public type Key = Text;
-  public type Path = Text;
-  public type StreamingCallbackHttpResponse = {
-    token : ?StreamingCallbackToken;
-    body : [Nat8];
-  };
-  public type StreamingCallbackToken = {
-    key : Text;
-    sha256 : ?[Nat8];
-    index : Nat;
-    content_encoding : Text;
-  };
-  public type StreamingStrategy = {
-    #Callback : {
-      token : StreamingCallbackToken;
-      callback : shared query StreamingCallbackToken -> async StreamingCallbackHttpResponse;
+actor {
+    private type Message = {
+        text : Text;
+        time : Time.Time;
     };
-  };
+
+    private type Microblog = actor{
+        follow: shared (Principal) -> async ();
+        follows: shared query() -> async [Principal];
+        post: shared (Text) -> async ();
+        posts: shared query (Time.Time) -> async [Message];
+        timeline: shared (Time.Time) -> async [Message];
+    };
+
+    stable var followed : List.List<Principal> = List.nil();
+
+    public shared ({caller}) func follow(id : Principal) : async () {
+        followed := List.push(id, followed);
+    };
+    
+    public shared query func follows() : async [Principal]{
+        return List.toArray(followed);
+    };
+
+    stable var messages : List.List<Message> = List.nil();
+
+    public shared ({caller}) func post(text : Text) : async () {
+        var msg : Message = {
+            text = text;
+            time = Time.now();
+        };
+        messages := List.push(msg, messages);
+    };
+
+    public shared query func posts(since : Time.Time) : async [Message] {
+        var since_message : List.List<Message> = List.nil();
+        for (msg in Iter.fromList(messages)) {
+            if (msg.time >= since) {
+                since_message := List.push(msg, since_message);
+            };
+        };
+        return List.toArray(since_message);
+    };
 
 
-  stable var counter = 0;
+    public shared func timeline(since : Time.Time) : async [Message] {
+        var all : List.List<Message> = List.nil();
 
-  // Get the value of the counter.
-  public query func get() : async Nat {
-    return counter;
-  };
+        for(id in Iter.fromList(followed)){
+            let canister : Microblog = actor(Principal.toText(id));
+            let msgs = await canister.posts(since);
+            for(msg in Iter.fromArray(msgs)){
+                all := List.push(msg, all);
+            };
+        };
 
-  // Set the value of the counter.
-  public func set(n : Nat) : async () {
-    counter := n;
-  };
-
-  // Increment the value of the counter.
-  public func inc() : async () {
-    counter += 1;
-  };
-
-  public shared query func http_request(request:HttpRequest): async HttpResponse {
-      {
-          body = Text.encodeUtf8("<html><body>"#Nat.toText(counter)#"</body></html>");
-          headers = [];
-          streaming_strategy = null;
-          status_code = 200;
-      }
-  }
-  
+        return List.toArray(all);
+    };
 };
