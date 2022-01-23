@@ -5,12 +5,17 @@ type Message =
    "text": text;
    time: Time;
  };
+type FollowInfo = 
+ record {
+   id: text;
+   name: text;
+ };
 service : {
   follow: (principal) -> ();
-  follows: () -> (vec principal) query;
+  follows: () -> (vec FollowInfo);
   get_name: () -> (opt text) query;
   post: (text, text) -> ();
-  posts: () -> (vec Message) query;
+  posts: (Time) -> (vec Message) query;
   set_name: (text) -> ();
-  timeline: () -> (vec Message);
+  timeline: (Time) -> (vec Message);
 }

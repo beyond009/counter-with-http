@@ -25,7 +25,7 @@ var num_posts = 0;
 
 async function load_posts() {
     let posts_section = document.getElementById("posts");
-    let posts = await counter.posts();
+    let posts = await counter.posts(0);
     if (num_posts === posts.length) return;
     posts_section.replaceChildren([]);
     num_posts = posts.length;
@@ -51,7 +51,7 @@ async function load_follows() {
     num_follows = follows.length;
     for (var i = 0; i < follows.length; i++) {
         let post = document.createElement("p");
-        post.innerText = follows[i];
+        post.innerText = follows[i].name + " " + follows[i].id;
         follows_section.appendChild(post);
     }
 }
@@ -60,7 +60,7 @@ var num_timeline = 0;
 
 async function load_timeline() {
     let timeline_section = document.getElementById("timeline");
-    let timeline = await counter.timeline();
+    let timeline = await counter.timeline(0);
     if (num_timeline === timeline.length) return;
     timeline_section.replaceChildren([]);
     num_timeline = timeline.length;
