@@ -3,20 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>counter</title>
+    <title>Microblog</title>
     <base href="/" />
     <link rel="icon" href="favicon.ico" />
-    <link type="text/css" rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">    
   </head>
   <body>
+    <header><h1>Microblog</h1></header>
     <main>
-      <img src="logo.png" alt="DFINITY logo" />
-      <form action="#">
-        <label for="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting"></section>
+      <label for = "message">What do you want to post?</label>
+      <textarea id= "message" ></textarea>
+      <br/>
+      <label for="otp">OTP</label>
+      <input id = "otp"></input>
+      <button id= "post">Post</button>
+      <label id = "error"></label>
+      <h3>posts:</h3>
+      <section id="posts"></section>
+      <h3>follows:</h3>
+      <section id="follows"></section>
+      <h3>timeline:</h3>
+      <section id="timeline"></section>
     </main>
   </body>
 </html>

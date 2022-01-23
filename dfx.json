@@ -3,8 +3,17 @@
         "counter": {
             "main": "src/counter/main.mo",
             "type": "motoko"
+        },
+        "counter_assets": {
+            "dependencies": ["counter"],
+            "frontend": {
+                "entrypoint": "src/counter_assets/src/index.html"
+            },
+            "source": ["src/counter_assets/assets", "dist/counter_assets/"],
+            "type": "assets"
         }
     },
+
     "defaults": {
         "build": {
             "args": "",
